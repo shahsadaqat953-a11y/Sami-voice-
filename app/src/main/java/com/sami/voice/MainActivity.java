@@ -74,14 +74,37 @@ public class MainActivity extends Activity {
             if (results != null && !results.isEmpty()) {
                 String userText = results.get(0);
 
-                textView.setText(
-                    "Aap: " + userText +
-                    "\n\nSami: Sun raha hoon 🤖"
-                );
+                textView.setText("Aap: " + userText + "\n\nSami soch raha hai... 🤖");
 
-                speak("Aap ne kaha " + userText);
+                String answer = getAnswer(userText);
+                textView.setText("Aap: " + userText + "\n\nSami: " + answer);
+                speak(answer);
             }
         }
+    }
+
+
+    private String getAnswer(String question) {
+        String q = question.toLowerCase(Locale.ROOT);
+
+        if (q.contains("hello") || q.contains("salam") || q.contains("اسلام")) {
+            return "وعلیکم السلام! میں Sami ہوں۔ آپ کیا پوچھنا چاہتے ہیں؟";
+        }
+
+        if (q.contains("tum kon") || q.contains("who are you")) {
+            return "میں Sami ہوں، آپ کا voice assistant۔";
+        }
+
+        if (q.contains("time") || q.contains("وقت")) {
+            return "میں ابھی وقت کی بنیادی معلومات دے سکتا ہوں، لیکن درست موجودہ وقت کے لیے clock app استعمال کریں۔";
+        }
+
+        if (q.contains("thank") || q.contains("شکریہ")) {
+            return "خوش رہیں! میں آپ کی مدد کے لیے حاضر ہوں۔";
+        }
+
+        return "میں نے آپ کی بات سنی: " + question +
+               ". اس سوال کا intelligent جواب دینے کے لیے مجھے AI model سے connect کرنا ہوگا۔";
     }
 
     private void speak(String text) {
