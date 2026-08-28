@@ -4,12 +4,15 @@ plugins {
 
 android {
     namespace 'com.sami.voice'
-    compileSdk 35
+    compileSdk 33
+    buildFeatures {
+        buildConfig true
+    }
 
     defaultConfig {
         applicationId 'com.sami.voice'
         minSdk 23
-        targetSdk 35
+        targetSdk 33
         versionCode 1
         versionName '1.0'
     }
