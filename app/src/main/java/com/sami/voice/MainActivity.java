@@ -101,19 +101,8 @@ public class MainActivity extends Activity {
     }
 
     private void askGemini(String question) {
-
         executor.execute(() -> {
-
             try {
-                String apiKey = BuildConfig.GEMINI_API_KEY;
-
-                if (apiKey == null || apiKey.trim().isEmpty()) {
-                    showAnswer(
-                            "Gemini API key abhi configure nahi hui."
-                    );
-                    return;
-                }
-
                 URL url = new URL(
                         "https://sadaqat-sami-2026.kingali127890.workers.dev"
                 );
@@ -125,42 +114,15 @@ public class MainActivity extends Activity {
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(30000);
                 connection.setDoOutput(true);
-
                 connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json"
+                        "Content-Type", "application/json"
                 );
-
-                connection.setRequestProperty(
-                        "x-goog-api-key",
-                        apiKey
-                );
-
-                JSONObject part = new JSONObject();
-                part.put("text",
-                        "You are Sami, a helpful voice assistant. " +
-                        "Reply naturally and briefly. " +
-                        "Answer in Urdu, Hindi or Sindhi when appropriate. " +
-                        "User says: " + question);
-
-                JSONArray parts = new JSONArray();
-                parts.put(part);
-
-                JSONObject content = new JSONObject();
-                content.put("parts", parts);
-
-                JSONArray contents = new JSONArray();
-                contents.put(content);
 
                 JSONObject body = new JSONObject();
-                body.put("contents", contents);
+                body.put("message", question);
 
-                OutputStream output =
-                        connection.getOutputStream();
-
-                output.write(
-                        body.toString().getBytes("UTF-8")
-                );
+                OutputStream output = connection.getOutputStream();
+                output.write(body.toString().getBytes("UTF-8"));
                 output.close();
 
                 int code = connection.getResponseCode();
@@ -171,13 +133,9 @@ public class MainActivity extends Activity {
                                 : connection.getErrorStream();
 
                 BufferedReader reader =
-                        new BufferedReader(
-                                new InputStreamReader(stream)
-                        );
+                        new BufferedReader(new InputStreamReader(stream));
 
-                StringBuilder response =
-                        new StringBuilder();
-
+                StringBuilder response = new StringBuilder();
                 String line;
 
                 while ((line = reader.readLine()) != null) {
@@ -186,24 +144,22 @@ public class MainActivity extends Activity {
 
                 reader.close();
 
+                JSONObject result =
+                        new JSONObject(response.toString());
+
                 if (code < 200 || code >= 300) {
                     showAnswer(
-                            "Gemini error: " + code
+                            "Sami server error: " +
+                            result.optString("error", "Unknown error")
                     );
                     return;
                 }
 
-                JSONObject result =
-                        new JSONObject(response.toString());
-
                 String answer =
-                        result
-                                .getJSONArray("candidates")
-                                .getJSONObject(0)
-                                .getJSONObject("content")
-                                .getJSONArray("parts")
-                                .getJSONObject(0)
-                                .getString("text");
+                        result.optString(
+                                "answer",
+                                "Mujhe jawab nahi mila."
+                        );
 
                 showAnswer(answer);
 
