@@ -2,3 +2,6 @@
 build/
 *.keystore
 *.jks
+
+local.properties
+*.zip

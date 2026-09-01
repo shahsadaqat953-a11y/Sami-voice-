@@ -2,209 +2,106 @@ package com.sami.voice;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
-import android.content.Intent;
+import android.graphics.Typeface;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
-    private static final int SPEECH_REQUEST = 100;
-    private TextView textView;
-    private TextToSpeech tts;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private TextView historyView;
+    private TextView pointsView;
+    private int points = 1000;
+    private final ArrayList<String> history = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        textView = new TextView(this);
-        textView.setText("Sami AI 🤖\n\nMic دبائیں اور بات کریں");
-        textView.setTextSize(22);
-        textView.setPadding(30, 60, 30, 30);
-
-        Button button = new Button(this);
-        button.setText("🎤 Sami سے بات کریں");
-
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(20, 40, 20, 20);
-        layout.addView(textView);
-        layout.addView(button);
+        layout.setPadding(30, 40, 30, 30);
+
+        TextView title = new TextView(this);
+        title.setText("Sami Analyzer 🤖");
+        title.setTextSize(28);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setGravity(Gravity.CENTER);
+
+        pointsView = new TextView(this);
+        pointsView.setText("Virtual Points: 1000");
+        pointsView.setTextSize(20);
+        pointsView.setGravity(Gravity.CENTER);
+        pointsView.setPadding(0, 25, 0, 25);
+
+        Button dragonButton = new Button(this);
+        dragonButton.setText("Dragon");
+
+        Button tigerButton = new Button(this);
+        tigerButton.setText("Tiger");
+
+        Button tieButton = new Button(this);
+        tieButton.setText("Tie");
+
+        Button clearButton = new Button(this);
+        clearButton.setText("Clear History");
+
+        historyView = new TextView(this);
+        historyView.setText("History:\\n\\nAbhi koi result nahi.");
+        historyView.setTextSize(18);
+        historyView.setPadding(0, 25, 0, 0);
+
+        layout.addView(title);
+        layout.addView(pointsView);
+        layout.addView(dragonButton);
+        layout.addView(tigerButton);
+        layout.addView(tieButton);
+        layout.addView(clearButton);
+        layout.addView(historyView);
 
         setContentView(layout);
 
-        tts = new TextToSpeech(this, status -> {
-            if (status == TextToSpeech.SUCCESS) {
-                tts.setLanguage(new Locale("ur", "PK"));
-            }
-        });
+        dragonButton.setOnClickListener(v -> addResult("Dragon"));
+        tigerButton.setOnClickListener(v -> addResult("Tiger"));
+        tieButton.setOnClickListener(v -> addResult("Tie"));
 
-        button.setOnClickListener(v -> startListening());
-    }
-
-    private void startListening() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        );
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ur-PK");
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Sami ko boliye...");
-
-        startActivityForResult(intent, SPEECH_REQUEST);
-    }
-
-    @Override
-    protected void onActivityResult(
-            int requestCode,
-            int resultCode,
-            Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == SPEECH_REQUEST &&
-                resultCode == RESULT_OK &&
-                data != null) {
-
-            ArrayList<String> results =
-                    data.getStringArrayListExtra(
-                            RecognizerIntent.EXTRA_RESULTS);
-
-            if (results != null && !results.isEmpty()) {
-                String userText = results.get(0);
-
-                textView.setText(
-                        "Aap: " + userText +
-                        "\n\nSami soch raha hai... 🤖"
-                );
-
-                askGemini(userText);
-            }
-        }
-    }
-
-    private void askGemini(String question) {
-        executor.execute(() -> {
-            try {
-                URL url = new URL(
-                        "https://sadaqat-sami-2026.kingali127890.workers.dev"
-                );
-
-                HttpURLConnection connection =
-                        (HttpURLConnection) url.openConnection();
-
-                connection.setRequestMethod("POST");
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(30000);
-                connection.setDoOutput(true);
-                connection.setRequestProperty(
-                        "Content-Type", "application/json"
-                );
-
-                JSONObject body = new JSONObject();
-                body.put("message", question);
-
-                OutputStream output = connection.getOutputStream();
-                output.write(body.toString().getBytes("UTF-8"));
-                output.close();
-
-                int code = connection.getResponseCode();
-
-                InputStream stream =
-                        code >= 200 && code < 300
-                                ? connection.getInputStream()
-                                : connection.getErrorStream();
-
-                BufferedReader reader =
-                        new BufferedReader(new InputStreamReader(stream));
-
-                StringBuilder response = new StringBuilder();
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-
-                reader.close();
-
-                JSONObject result =
-                        new JSONObject(response.toString());
-
-                if (code < 200 || code >= 300) {
-                    showAnswer(
-                            "Sami server error: " +
-                            result.optString("error", "Unknown error")
-                    );
-                    return;
-                }
-
-                String answer =
-                        result.optString(
-                                "answer",
-                                "Mujhe jawab nahi mila."
-                        );
-
-                showAnswer(answer);
-
-            } catch (Exception e) {
-                showAnswer(
-                        "Sami connection error: " +
-                        e.getMessage()
-                );
-            }
+        clearButton.setOnClickListener(v -> {
+            history.clear();
+            points = 1000;
+            updateScreen();
         });
     }
 
-    private void showAnswer(String answer) {
-
-        runOnUiThread(() -> {
-            textView.setText(
-                    "Sami: " + answer
-            );
-
-            speak(answer);
-        });
-    }
-
-    private void speak(String text) {
-
-        if (tts != null) {
-            tts.speak(
-                    text,
-                    TextToSpeech.QUEUE_FLUSH,
-                    null,
-                    "SAMI_RESPONSE"
-            );
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        executor.shutdownNow();
-
-        if (tts != null) {
-            tts.stop();
-            tts.shutdown();
+    private void addResult(String result) {
+        history.add(result);
+        if (history.size() > 20) {
+            history.remove(0);
         }
 
-        super.onDestroy();
+        points += 10;
+        updateScreen();
+    }
+
+    private void updateScreen() {
+        pointsView.setText("Virtual Points: " + points);
+
+        if (history.isEmpty()) {
+            historyView.setText("History:\\n\\nAbhi koi result nahi.");
+            return;
+        }
+
+        StringBuilder text = new StringBuilder("History:\\n\\n");
+
+        for (int i = history.size() - 1; i >= 0; i--) {
+            text.append(history.size() - i)
+                .append(". ")
+                .append(history.get(i))
+                .append("\\n");
+        }
+
+        historyView.setText(text.toString());
     }
 }
