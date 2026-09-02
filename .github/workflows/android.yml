@@ -33,11 +33,6 @@ jobs:
       - name: Build APK
         run: gradle assembleDebug
 
-      - name: Upload APKm
-        uses: actions/upload-artifact@v4
-        with:
-          name: SamiVoice-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
           
 
           
