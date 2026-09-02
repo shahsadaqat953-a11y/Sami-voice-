@@ -2,20 +2,19 @@ package com.sami.voice;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.graphics.Typeface;
-import android.view.Gravity;
+import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
+import android.content.Intent;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
 
-    private TextView historyView;
-    private TextView pointsView;
-    private int points = 1000;
-    private final ArrayList<String> history = new ArrayList<>();
+    private TextView status;
+    private TextToSpeech tts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,85 +22,79 @@ public class MainActivity extends Activity {
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(30, 40, 30, 30);
+        layout.setPadding(30, 50, 30, 30);
 
         TextView title = new TextView(this);
-        title.setText("Sami Analyzer 🤖");
-        title.setTextSize(28);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setGravity(Gravity.CENTER);
+        title.setText("Sami AI 🤖");
+        title.setTextSize(30);
+        title.setGravity(17);
 
-        pointsView = new TextView(this);
-        pointsView.setText("Virtual Points: 1000");
-        pointsView.setTextSize(20);
-        pointsView.setGravity(Gravity.CENTER);
-        pointsView.setPadding(0, 25, 0, 25);
+        status = new TextView(this);
+        status.setText("السلام علیکم! میں سامی ہوں۔");
+        status.setTextSize(20);
+        status.setPadding(0, 40, 0, 40);
 
-        Button dragonButton = new Button(this);
-        dragonButton.setText("Dragon");
-
-        Button tigerButton = new Button(this);
-        tigerButton.setText("Tiger");
-
-        Button tieButton = new Button(this);
-        tieButton.setText("Tie");
-
-        Button clearButton = new Button(this);
-        clearButton.setText("Clear History");
-
-        historyView = new TextView(this);
-        historyView.setText("History:\\n\\nAbhi koi result nahi.");
-        historyView.setTextSize(18);
-        historyView.setPadding(0, 25, 0, 0);
+        Button mic = new Button(this);
+        mic.setText("🎤 بولیں");
 
         layout.addView(title);
-        layout.addView(pointsView);
-        layout.addView(dragonButton);
-        layout.addView(tigerButton);
-        layout.addView(tieButton);
-        layout.addView(clearButton);
-        layout.addView(historyView);
+        layout.addView(status);
+        layout.addView(mic);
 
         setContentView(layout);
 
-        dragonButton.setOnClickListener(v -> addResult("Dragon"));
-        tigerButton.setOnClickListener(v -> addResult("Tiger"));
-        tieButton.setOnClickListener(v -> addResult("Tie"));
-
-        clearButton.setOnClickListener(v -> {
-            history.clear();
-            points = 1000;
-            updateScreen();
+        tts = new TextToSpeech(this, result -> {
+            if (result == TextToSpeech.SUCCESS) {
+                tts.setLanguage(new Locale("ur", "PK"));
+            }
         });
+
+        mic.setOnClickListener(v -> startListening());
     }
 
-    private void addResult(String result) {
-        history.add(result);
-        if (history.size() > 20) {
-            history.remove(0);
-        }
+    private void startListening() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        );
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ur-PK");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "سامی کو بولیں");
 
-        points += 10;
-        updateScreen();
+        try {
+            startActivityForResult(intent, 100);
+        } catch (Exception e) {
+            status.setText("Speech recognition دستیاب نہیں ہے۔");
+        }
     }
 
-    private void updateScreen() {
-        pointsView.setText("Virtual Points: " + points);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        if (history.isEmpty()) {
-            historyView.setText("History:\\n\\nAbhi koi result nahi.");
-            return;
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            ArrayList<String> results =
+                data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+            if (results != null && !results.isEmpty()) {
+                String text = results.get(0);
+                status.setText("آپ: " + text);
+                tts.speak(
+                    "آپ نے کہا: " + text,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    "sami"
+                );
+            }
         }
+    }
 
-        StringBuilder text = new StringBuilder("History:\\n\\n");
-
-        for (int i = history.size() - 1; i >= 0; i--) {
-            text.append(history.size() - i)
-                .append(". ")
-                .append(history.get(i))
-                .append("\\n");
+    @Override
+    protected void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
         }
-
-        historyView.setText(text.toString());
+        super.onDestroy();
     }
 }
