@@ -1,8 +1,3 @@
-
-package com.sami.voice;
-
-import android.app.Activity;
-
 package com.sami.voice;
 
 import android.app.Activity;
@@ -109,7 +104,6 @@ public class MainActivity extends Activity {
 
                 String text = results.get(0);
 
-                // Mobile command check
                 String commandAnswer =
                         SamiCommands.handle(this, text);
 
@@ -208,7 +202,6 @@ public class MainActivity extends Activity {
                 c.disconnect();
 
             } catch (Exception e) {
-
                 runOnUiThread(() ->
                         status.setText(
                                 "Sami server سے connect نہیں ہو سکا۔"
