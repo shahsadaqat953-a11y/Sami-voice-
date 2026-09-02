@@ -14,6 +14,7 @@ import java.util.Locale;
 public class MainActivity extends Activity {
 
     private TextView status;
+    private static final String SAMI_URL = "https://sami-ai.kingali127890.workers.dev";
     private TextToSpeech tts;
 
     @Override
@@ -78,15 +79,53 @@ public class MainActivity extends Activity {
 
             if (results != null && !results.isEmpty()) {
                 String text = results.get(0);
-                status.setText("آپ: " + text);
-                tts.speak(
-                    "آپ نے کہا: " + text,
-                    TextToSpeech.QUEUE_FLUSH,
-                    null,
-                    "sami"
-                );
+                status.setText("Sami سوچ رہا ہے...");
+                askSami(text);
             }
         }
+    }
+
+    private void askSami(String message) {
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL(SAMI_URL);
+                java.net.HttpURLConnection c =
+                    (java.net.HttpURLConnection) url.openConnection();
+                c.setRequestMethod("POST");
+                c.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                c.setDoOutput(true);
+
+                String body = "{\"message\":\"" +
+                    message.replace("\\", "\\\\").replace("\"", "\\\"") +
+                    "\"}";
+
+                try (java.io.OutputStream os = c.getOutputStream()) {
+                    os.write(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+
+                java.io.InputStream is =
+                    c.getResponseCode() >= 400 ? c.getErrorStream() : c.getInputStream();
+
+                java.util.Scanner sc =
+                    new java.util.Scanner(is, "UTF-8").useDelimiter("\\A");
+                String response = sc.hasNext() ? sc.next() : "";
+                sc.close();
+
+                String answer = response.replaceAll(
+                    ".*\"answer\"\\s*:\\s*\"([^\"]*)\".*", "$1"
+                ).replace("\\n", "\n").replace("\\\"", "\"");
+
+                runOnUiThread(() -> {
+                    status.setText("Sami: " + answer);
+                    tts.speak(answer, TextToSpeech.QUEUE_FLUSH, null, "sami");
+                });
+
+                c.disconnect();
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                    status.setText("Sami server se connect nahi ho saka."));
+            }
+        }).start();
     }
 
     @Override
