@@ -179,6 +179,7 @@ public class MainActivity extends Activity {
                 sc.close();
 
                 String answer =
+                        response.contains("\"error\"") ? "ابھی AI کی حد پوری ہو گئی ہے، تھوڑی دیر بعد دوبارہ کوشش کریں۔" :
                         response.replaceAll(
                                 ".*\"answer\"\\s*:\\s*\"([^\"]*)\".*",
                                 "$1"
