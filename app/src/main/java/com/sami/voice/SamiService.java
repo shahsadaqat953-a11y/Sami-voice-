@@ -15,6 +15,7 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import java.util.List;
 import java.util.Locale;
+import android.util.Log;
 
 public class SamiService extends Service {
 
@@ -67,6 +68,7 @@ public class SamiService extends Service {
 
             @Override
             public void onError(int error) {
+                Log.e("SAMI", "Speech error: " + error);
                 if (!destroyed) handler.postDelayed(SamiService.this::startListening, 800);
             }
 
@@ -79,6 +81,7 @@ public class SamiService extends Service {
                 }
 
                 String text = matches.get(0).toLowerCase(Locale.ROOT);
+                Log.d("SAMI", "Recognized: " + matches.get(0));
                 if (!waitingForCommand && isWakeWord(text)) {
                     waitingForCommand = true;
                     speak("جی بولیں صداقت علی شاہ");
