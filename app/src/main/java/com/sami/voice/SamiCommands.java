@@ -27,12 +27,12 @@ public class SamiCommands{
                 return "آواز کم کر دی ہے۔";
             }
 
-            if (command.contains("وائی فائی") || command.contains("wifi")){
+            if (command.contains("وائی فائی") || command.contains("wifi") || command.contains("wi-fi")){
                 activity.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                 return "Wi-Fi کی settings کھول دی ہیں۔";
             }
 
-            if (command.contains("بلوٹوتھ") || command.contains("bluetooth")){
+            if (command.contains("بلوٹوتھ") || command.contains("bluetooth") || command.contains("blue tooth")){
                 activity.startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
                 return "Bluetooth کی settings کھول دی ہیں۔";
             }
