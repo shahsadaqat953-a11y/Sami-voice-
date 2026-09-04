@@ -54,6 +54,7 @@ public class SamiService extends Service {
 
     private void setupSpeechRecognizer() {
         if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+            Log.e("SAMI", "Speech recognition NOT available");
             return;
         }
 
