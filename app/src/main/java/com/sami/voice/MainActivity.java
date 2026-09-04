@@ -187,13 +187,14 @@ public class MainActivity extends Activity {
                         .replace("\\n", "\n")
                         .replace("\\\"", "\"");
 
+                final String finalAnswer = (answer.contains("quota") || answer.contains("Quota") || answer.contains("exceeded")) ? "ابھی AI کی حد پوری ہو گئی ہے، تھوڑی دیر بعد دوبارہ کوشش کریں۔" : answer;
+
                 runOnUiThread(() -> {
-                    if (answer.contains("quota") || answer.contains("Quota") || answer.contains("exceeded")) answer = "ابھی AI کی حد پوری ہو گئی ہے، تھوڑی دیر بعد دوبارہ کوشش کریں۔";
-                    status.setText("Sami: " + answer);
+                    status.setText("Sami: " + finalAnswer);
 
                     if (tts != null) {
                         tts.speak(
-                                answer,
+                                finalAnswer,
                                 TextToSpeech.QUEUE_FLUSH,
                                 null,
                                 "sami"
