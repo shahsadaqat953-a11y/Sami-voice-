@@ -47,6 +47,12 @@ public class SamiCommands{
             return "یہ command اس فون پر دستیاب نہیں ہے۔";
         }
 
+        if (command.contains("گوگل") || command.contains("browser") || command.contains("براوزر")) { activity.startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.com"))); return "Google کھول دیا ہے۔"; }
+
+        if (command.contains("کیمرہ") || command.contains("camera")) { activity.startActivity(new Intent("android.media.action.IMAGE_CAPTURE")); return "Camera کھول دیا ہے۔"; }
+
+        if (command.contains("الارم") || command.contains("alarm")) { activity.startActivity(new Intent("android.intent.action.SHOW_ALARMS")); return "Alarm کھول دیا ہے۔"; }
+
         return null;
     }
 }
