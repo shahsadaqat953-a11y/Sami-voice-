@@ -15,7 +15,7 @@ export default {
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" +
         env.GEMINI_API_KEY;
 
-      const response = await fetch(url, {
+      const response = await fetch(url, { signal: AbortSignal.timeout(30000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
