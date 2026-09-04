@@ -187,6 +187,7 @@ public class MainActivity extends Activity {
                         .replace("\\\"", "\"");
 
                 runOnUiThread(() -> {
+                    if (answer.contains("quota") || answer.contains("Quota") || answer.contains("exceeded")) answer = "ابھی AI کی حد پوری ہو گئی ہے، تھوڑی دیر بعد دوبارہ کوشش کریں۔";
                     status.setText("Sami: " + answer);
 
                     if (tts != null) {
