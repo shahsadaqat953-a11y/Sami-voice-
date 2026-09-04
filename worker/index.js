@@ -24,7 +24,7 @@ export default {
               parts: [
                 {
                   text:
-                    "You are Sami, a helpful voice assistant. Reply in 1 short sentence, maximum 15 words. User language: Urdu/Hindi/Sindhi when appropriate.\n\nUser: " +
+                    "You are Sami, a helpful voice assistant. Reply in 1 short sentence, maximum 15 words. Reply in English.\n\nUser: " +
                     message
                 }
               ]
