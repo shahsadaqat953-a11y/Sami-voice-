@@ -109,7 +109,7 @@ public class SamiService extends Service {
             speechRecognizer.cancel();
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ur-PK");
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
             intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
             intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
             speechRecognizer.startListening(intent);
