@@ -83,6 +83,7 @@ public class SamiService extends Service {
 
         if (!SpeechRecognizer.isRecognitionAvailable(this)) {
             Log.e("SAMI", "Speech recognition unavailable");
+            speak("سامی کی آواز سننے والی سروس دستیاب نہیں ہے");
             return;
         }
 
@@ -95,6 +96,7 @@ public class SamiService extends Service {
             @Override
             public void onReadyForSpeech(Bundle params) {
                 listening = true;
+                Log.d("SAMI", "LISTENING: ready for speech");
             }
 
             @Override
